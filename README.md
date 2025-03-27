@@ -1,131 +1,183 @@
-# SIT323 Task 4.1P - Simple Calculator Microservices
+# SIT323 Task 4.2 Enhanced Calculator Microservice
 
-## Use of technology
+## Project Profile
+
+This project is based on the previous Calculator microservice, with new advanced arithmetic operations and enhanced error handling.
+
+## Technology Stack
+
 - Node.js
-- Express.js
-- Git and GitHub
+- Git
 - Visual Studio Code
 
-## Creating a new Node.js project
 
-### Open a terminal in the project root directory
-
-Initialize a new Node.js project:
-
-```bash
-npm init -y
-```
-
-### Installing the Express Framework
-
-In the project directory, run the following command to install Express:
+## Installation and Running
 
 ```bash
 npm install express
+node app.js
 ```
-
-## Designing and Implementing API Endpoints
-
-### Creating the main app.js file
-In app.js, add the following code:
+Optimize the code:
 ```javascript
 const express = require('express');
 const app = express();
 const port = 3000;
 
+// Unified error handling function
+function handleError(res, message) {
+    return res.status(400).json({ error: message });
+}
+
+// Parameter verification function
+function validateParams(req, res, singleParam = false) {
+    const { num1, num2 } = req.query;
+
+    if (singleParam) {
+        if (num1 === undefined) {
+            return handleError(res, 'Missing parameter: num1');
+        }
+        const n1 = parseFloat(num1);
+        if (isNaN(n1)) {
+            return handleError(res, 'Invalid parameter: num1 must be a number.');
+        }
+        return { n1 };
+    } else {
+        if (num1 === undefined || num2 === undefined) {
+            return handleError(res, 'Missing parameter: num1 or num2');
+        }
+        const n1 = parseFloat(num1);
+        const n2 = parseFloat(num2);
+        if (isNaN(n1) || isNaN(n2)) {
+            return handleError(res, 'Invalid parameters: num1 and num2 must be numbers.');
+        }
+        return { n1, n2 };
+    }
+}
+
+
 // Addition
 app.get('/add', (req, res) => {
-    const { num1, num2 } = req.query;
-    if (!num1 || !num2) {
-        return res.status(400).json({ error: 'Missing parameter num1 or num2' });
-    }
-    const result = parseFloat(num1) + parseFloat(num2);
-    if (isNaN(result)) {
-        return res.status(400).json({ error: 'The parameters num1 and num2 must be number' });
-    }
-    res.json({ result });
+    const params = validateParams(req, res);
+    if (!params.n1 && params.n1 !== 0) return;
+    res.json({ result: params.n1 + params.n2 });
 });
 
 // Subduction
 app.get('/subtract', (req, res) => {
-    const { num1, num2 } = req.query;
-    if (!num1 || !num2) {
-        return res.status(400).json({ error: 'Missing parameter num1 or num2' });
-    }
-    const result = parseFloat(num1) - parseFloat(num2);
-    if (isNaN(result)) {
-        return res.status(400).json({ error: 'The parameters num1 and num2 must be number' });
-    }
-    res.json({ result });
+    const params = validateParams(req, res);
+    if (!params.n1 && params.n1 !== 0) return;
+    res.json({ result: params.n1 - params.n2 });
 });
 
 // Multiplication
 app.get('/multiply', (req, res) => {
-    const { num1, num2 } = req.query;
-    if (!num1 || !num2) {
-        return res.status(400).json({ error: 'Missing parameter num1 or num2' });
-    }
-    const result = parseFloat(num1) * parseFloat(num2);
-    if (isNaN(result)) {
-        return res.status(400).json({ error: 'The parameters num1 and num2 must be number' });
-    }
-    res.json({ result });
+    const params = validateParams(req, res);
+    if (!params.n1 && params.n1 !== 0) return;
+    res.json({ result: params.n1 * params.n2 });
 });
 
-// Division
+// Divisio
 app.get('/divide', (req, res) => {
-    const { num1, num2 } = req.query;
-    if (!num1 || !num2) {
-        return res.status(400).json({ error: 'Missing parameter num1 or num2' });
+    const params = validateParams(req, res);
+    if (!params.n1 && params.n1 !== 0) return;
+    if (params.n2 === 0) {
+        return handleError(res, 'Invalid divisor: num2 cannot be zero.');
     }
-    const divisor = parseFloat(num2);
-    if (divisor === 0) {
-        return res.status(400).json({ error: 'num2 cannot be zero' });
+    res.json({ result: params.n1 / params.n2 });
+});
+
+// Exponential operation
+app.get('/power', (req, res) => {
+    const params = validateParams(req, res);
+    if (!params.n1 && params.n1 !== 0) return;
+    res.json({ result: Math.pow(params.n1, params.n2) });
+});
+
+// Square root operation
+app.get('/sqrt', (req, res) => {
+    const params = validateParams(req, res, true);
+    if (!params.n1 && params.n1 !== 0) return;
+    if (params.n1 < 0) {
+        return handleError(res, 'Invalid parameter: num1 cannot be negative.');
     }
-    const result = parseFloat(num1) / divisor;
-    if (isNaN(result)) {
-        return res.status(400).json({ error: 'The parameters num1 and num2 must be number' });
+    res.json({ result: Math.sqrt(params.n1) });
+});
+
+
+// Modulo operation
+app.get('/mod', (req, res) => {
+    const params = validateParams(req, res);
+    if (!params.n1 && params.n1 !== 0) return;
+    if (params.n2 === 0) {
+        return handleError(res, 'Invalid divisor: num2 cannot be zero.');
     }
-    res.json({ result });
+    res.json({ result: params.n1 % params.n2 });
+});
+
+// Global unknown routing processing
+app.use((req, res) => {
+    res.status(404).json({ error: 'Invalid request path, please check the interface address' });
 });
 
 // Start the server
 app.listen(port, () => {
-    console.log(`The calculator microservice runs on: http://localhost:${port}`);
+    console.log(`The Enhanced Calculator microservice runs on http://localhost:${port}`);
 });
 ```
 
-### Running Microservices
 
-In the project root directory, start the microservice using the following command:
+## API Endpoints
 
-```bash
-node app.js
-```
+### Basic Operations
 
-After successfully running, you will see the following output in the terminal:
-The calculator microservice runs on: http://localhost:3000
+- **Addition**
+  - `/add?num1=10&num2=5`
+  - Response: `{ "result": 15 }`
 
-At this point the interface can be accessed in a browser, for example:
+- **Subtraction**
+  - `/subtract?num1=9&num2=4`
+  - Response: `{ "result": 5 }`
 
-- http://localhost:3000/add?num1=12&num2=6
-- http://localhost:3000/subtract?num1=16&num2=9
-- http://localhost:3000/multiply?num1=3&num2=18
-- http://localhost:3000/divide?num1=36&num2=6
+- **Multiplication**
+  - `/multiply?num1=3&num2=9`
+  - Response: `{ "result": 27 }`
 
-### Error handling mechanism
+- **Division**
+  - `/divide?num1=24&num2=8`
+  - Response: `{ "result": 3 }`
 
-- **Return in case of missing parameters:**
-  ```json
-  { "error": "Missing parameter num1 or num2" }
-  ```
+### Advanced Operations
 
-- **Returns if parameter is not numeric:** 
-  ```json
-  { "error": "he parameters num1 and num2 must be number"}
-  ```
+- **Exponential operation**
+  - `/power?num1=2&num2=3`
+  - Response: `{ "result": 8 }`
 
-- **Returns when the divisor is zero:** 
-  ```json
-  { "error": "num2 cannot be zero" }
-  ```
+- **Square root operation**
+  - `/sqrt?num1=9`
+  - Response: `{ "result": 3 }`
+
+- **Modulo operation**
+  - `/mod?num1=10&num2=3`
+  - Response: `{ "result": 1 }`
+
+## Error Handling Examples
+
+- **Missing Parameters**
+  - `/add?num1=9`
+  - Response: `{ "error": "Missing parameter: num1 or num2" }`
+
+- **Invalid Numbers**
+  - `/add?num1=a&num2=5`
+  - Response: `{ "error": "Invalid parameters: num1 and num2 must be numbers." }`
+
+- **Division by Zero**
+  - `/divide?num1=10&num2=0`
+  - Response: `{ "error": "Invalid divisor: num2 cannot be zero." }`
+
+- **Square Root of Negative Number**
+  - `/sqrt?num1=-9`
+  - Response: `{ "error": "Invalid parameter: num1 cannot be negative." }`
+
+- **Unknown Route**
+  - `/unknown`
+  - Response: `{ "error": "Invalid request path, please check the interface address" }`
