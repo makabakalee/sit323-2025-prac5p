@@ -36,7 +36,7 @@
 
    Enter the Docker Hub credentials to log in.
 
-2. **Push the image** ``bash docker login
+2. **Push the image** 
 
    ```bash
    docker push makabakalee/sit323-2025-prac5p
