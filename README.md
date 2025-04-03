@@ -32,7 +32,7 @@
 
    ```bash
    docker login
-   ``
+   ```
 
    Enter the Docker Hub credentials to log in.
 
